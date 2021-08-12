@@ -1,28 +1,65 @@
 package com.bsworks.bastoslog.api.controller;
 
 import com.bsworks.bastoslog.domain.model.Cliente;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.bsworks.bastoslog.domain.repository.ClienteRepository;
+import com.bsworks.bastoslog.domain.service.CatalogoClienteService;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
+@AllArgsConstructor
 @RestController
+@RequestMapping("/clientes")
 public class ClienteController {
 
-    @GetMapping("/clientes")
+    private final ClienteRepository clienteRepository;
+    private final CatalogoClienteService catalogoClienteService;
+
+    @GetMapping()
     public List<Cliente> listar() {
-        var cliente1 = new Cliente();
-        cliente1.setId(1L);
-        cliente1.setNome("João");
-        cliente1.setTelefone("11 98351-2009");
-        cliente1.setEmail("caio@bswork.com");
+        return clienteRepository.findAll();
+    }
 
-        var cliente2 = new Cliente();
-        cliente2.setId(2L);
-        cliente2.setNome("Maria");
-        cliente2.setTelefone("11 5138-2010");
-        cliente2.setEmail("maria@bswork.com");
+    @GetMapping("/{id}")
+    public ResponseEntity<Cliente> buscar(@PathVariable("id") Long clientId) {
+        return clienteRepository.findById(clientId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-        return List.of(cliente1, cliente2);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Cliente adicionar(@RequestBody @Validated Cliente cliente) {
+        return catalogoClienteService.salvar(cliente);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Cliente> atualizar(@PathVariable("id") Long clientId, @RequestBody Cliente cliente) {
+
+        if (!clienteRepository.existsById(clientId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        cliente.setId(clientId);
+        cliente = catalogoClienteService.salvar(cliente);
+
+        return ResponseEntity.ok(cliente);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> remover(@PathVariable("id") Long clientId) {
+
+        if (!clienteRepository.existsById(clientId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        catalogoClienteService.excluir(clientId);
+
+        return ResponseEntity.noContent().build();
     }
 }
