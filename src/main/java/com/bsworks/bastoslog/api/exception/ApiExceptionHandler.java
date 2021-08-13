@@ -1,5 +1,6 @@
 package com.bsworks.bastoslog.api.exception;
 
+import com.bsworks.bastoslog.domain.exception.ClienteNaoEncontradoException;
 import com.bsworks.bastoslog.domain.exception.NegocioException;
 import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -50,6 +51,18 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(NegocioException.class)
     public ResponseEntity<Object> handleNegocio(NegocioException ex, WebRequest request) {
         HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+
+        Problema problema = new Problema();
+        problema.setStatus(status.value());
+        problema.setDataHora(LocalDateTime.now());
+        problema.setTitulo(ex.getMessage());
+
+        return handleExceptionInternal(ex, problema, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(ClienteNaoEncontradoException.class)
+    public ResponseEntity<Object> handleNegocio(ClienteNaoEncontradoException ex, WebRequest request) {
+        HttpStatus status = HttpStatus.NOT_FOUND;
 
         Problema problema = new Problema();
         problema.setStatus(status.value());

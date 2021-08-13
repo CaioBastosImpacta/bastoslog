@@ -40,24 +40,20 @@ public class ClienteController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> atualizar(@PathVariable("id") Long clientId, @RequestBody Cliente cliente) {
-
-        if (!clienteRepository.existsById(clientId)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        cliente.setId(clientId);
-        cliente = catalogoClienteService.salvar(cliente);
-
-        return ResponseEntity.ok(cliente);
+        return clienteRepository.findById(clientId)
+                .map(client -> {
+                    cliente.setId(client.getId());
+                    return clienteRepository.save(cliente);
+                })
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> remover(@PathVariable("id") Long clientId) {
-
         if (!clienteRepository.existsById(clientId)) {
             return ResponseEntity.notFound().build();
         }
-
         catalogoClienteService.excluir(clientId);
 
         return ResponseEntity.noContent().build();

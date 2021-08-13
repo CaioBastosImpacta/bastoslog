@@ -1,5 +1,6 @@
 package com.bsworks.bastoslog.domain.service;
 
+import com.bsworks.bastoslog.domain.exception.ClienteNaoEncontradoException;
 import com.bsworks.bastoslog.domain.exception.NegocioException;
 import com.bsworks.bastoslog.domain.model.Cliente;
 import com.bsworks.bastoslog.domain.repository.ClienteRepository;
@@ -12,6 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CatalogoClienteService {
 
     private final ClienteRepository clienteRepository;
+
+    public Cliente buscar(Long clientId) {
+        return clienteRepository.findById(clientId)
+                .orElseThrow(() -> new ClienteNaoEncontradoException("Cliente não encontrado."));
+    }
 
     @Transactional
     public Cliente salvar(Cliente cliente) {
