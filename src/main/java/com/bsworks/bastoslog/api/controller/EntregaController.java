@@ -5,6 +5,7 @@ import com.bsworks.bastoslog.api.model.EntregaModel;
 import com.bsworks.bastoslog.api.model.input.EntregaInput;
 import com.bsworks.bastoslog.domain.model.Entrega;
 import com.bsworks.bastoslog.domain.repository.EntregaRepository;
+import com.bsworks.bastoslog.domain.service.FinalizacaoEntregaService;
 import com.bsworks.bastoslog.domain.service.SolicitacaoEntregaService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,10 @@ import java.util.List;
 @RequestMapping("/entregas")
 public class EntregaController {
 
-    private EntregaRepository entregaRepository;
-    private SolicitacaoEntregaService solicitacaoEntregaService;
-    private EntregaAssembler entregaAssembler;
+    private final EntregaRepository entregaRepository;
+    private final SolicitacaoEntregaService solicitacaoEntregaService;
+    private final EntregaAssembler entregaAssembler;
+    private final FinalizacaoEntregaService finalizacaoEntregaService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -29,6 +31,12 @@ public class EntregaController {
         Entrega novaEntrega = entregaAssembler.toEntity(entregaInput);
         Entrega entregaSolicitada = solicitacaoEntregaService.solicitar(novaEntrega);
         return entregaAssembler.toModel(entregaSolicitada);
+    }
+
+    @PutMapping("/{id}/finalizacao")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void finalizar(@PathVariable("id") Long entregaId) {
+        finalizacaoEntregaService.finalizar(entregaId);
     }
 
     @GetMapping

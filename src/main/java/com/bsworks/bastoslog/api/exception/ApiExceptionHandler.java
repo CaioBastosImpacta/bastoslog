@@ -1,6 +1,6 @@
 package com.bsworks.bastoslog.api.exception;
 
-import com.bsworks.bastoslog.domain.exception.ClienteNaoEncontradoException;
+import com.bsworks.bastoslog.domain.exception.EntidadeNaoEncontradaException;
 import com.bsworks.bastoslog.domain.exception.NegocioException;
 import lombok.AllArgsConstructor;
 import org.springframework.context.MessageSource;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,8 +60,8 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, problema, new HttpHeaders(), status, request);
     }
 
-    @ExceptionHandler(ClienteNaoEncontradoException.class)
-    public ResponseEntity<Object> handleNegocio(ClienteNaoEncontradoException ex, WebRequest request) {
+    @ExceptionHandler({ EntidadeNaoEncontradaException.class })
+    public ResponseEntity<Object> handleNegocio(Exception ex, WebRequest request) {
         HttpStatus status = HttpStatus.NOT_FOUND;
 
         Problema problema = new Problema();

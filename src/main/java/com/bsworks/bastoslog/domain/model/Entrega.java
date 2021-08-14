@@ -1,14 +1,15 @@
 package com.bsworks.bastoslog.domain.model;
 
-import com.bsworks.bastoslog.domain.ValidationGroups;
+import com.bsworks.bastoslog.domain.exception.NegocioException;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.groups.ConvertGroup;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,9 +22,11 @@ public class Entrega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ConvertGroup(to = ValidationGroups.ClientId.class)
     @ManyToOne
     private Cliente cliente;
+
+    @OneToMany(mappedBy = "entrega", cascade = CascadeType.ALL)
+    private List<Ocorrencia> ocorrencias = new ArrayList<>();
 
     @Embedded
     private Destinatario destinatario;
@@ -33,4 +36,32 @@ public class Entrega {
     private BigDecimal taxa;
     private OffsetDateTime dataPedido;
     private OffsetDateTime dataFinalizacao;
+
+    public Ocorrencia adicionarOcorrencia(String descricao) {
+        Ocorrencia ocorrencia = new Ocorrencia();
+        ocorrencia.setDescricao(descricao);
+        ocorrencia.setDataRegistro(OffsetDateTime.now());
+        ocorrencia.setEntrega(this);
+
+        this.getOcorrencias().add(ocorrencia);
+
+        return ocorrencia;
+    }
+
+    public void finalizar() {
+        if (naoPodeFinalizada()) {
+            throw new NegocioException("Entrega não pode ser finalizada.");
+        }
+
+        setStatus(StatusEntrega.FINALIZADA);
+        setDataFinalizacao(OffsetDateTime.now());
+    }
+
+    public boolean naoPodeFinalizada() {
+        return !podeSerFinalizada();
+    }
+
+    public boolean podeSerFinalizada() {
+        return StatusEntrega.PENDENTE.equals(getStatus());
+    }
 }

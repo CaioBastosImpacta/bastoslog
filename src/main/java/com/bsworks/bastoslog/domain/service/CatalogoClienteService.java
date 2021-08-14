@@ -1,6 +1,5 @@
 package com.bsworks.bastoslog.domain.service;
 
-import com.bsworks.bastoslog.domain.exception.ClienteNaoEncontradoException;
 import com.bsworks.bastoslog.domain.exception.NegocioException;
 import com.bsworks.bastoslog.domain.model.Cliente;
 import com.bsworks.bastoslog.domain.repository.ClienteRepository;
@@ -16,7 +15,7 @@ public class CatalogoClienteService {
 
     public Cliente buscar(Long clientId) {
         return clienteRepository.findById(clientId)
-                .orElseThrow(() -> new ClienteNaoEncontradoException("Cliente não encontrado."));
+                .orElseThrow(() -> new NegocioException("Cliente não encontrado."));
     }
 
     @Transactional
