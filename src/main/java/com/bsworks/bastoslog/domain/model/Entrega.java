@@ -1,13 +1,14 @@
 package com.bsworks.bastoslog.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.bsworks.bastoslog.domain.ValidationGroups;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.groups.ConvertGroup;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -20,21 +21,16 @@ public class Entrega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ConvertGroup(to = ValidationGroups.ClientId.class)
     @ManyToOne
     private Cliente cliente;
 
     @Embedded
     private Destinatario destinatario;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Enumerated(EnumType.STRING)
     private StatusEntrega status;
-
     private BigDecimal taxa;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDateTime dataPedido;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private LocalDateTime dataFinalizacao;
+    private OffsetDateTime dataPedido;
+    private OffsetDateTime dataFinalizacao;
 }

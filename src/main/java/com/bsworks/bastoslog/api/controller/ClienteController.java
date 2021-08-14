@@ -1,5 +1,8 @@
 package com.bsworks.bastoslog.api.controller;
 
+import com.bsworks.bastoslog.api.assembler.ClienteAssembler;
+import com.bsworks.bastoslog.api.model.ClienteModel;
+import com.bsworks.bastoslog.api.model.input.ClienteInput;
 import com.bsworks.bastoslog.domain.model.Cliente;
 import com.bsworks.bastoslog.domain.repository.ClienteRepository;
 import com.bsworks.bastoslog.domain.service.CatalogoClienteService;
@@ -10,7 +13,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @RestController
@@ -19,31 +21,38 @@ public class ClienteController {
 
     private final ClienteRepository clienteRepository;
     private final CatalogoClienteService catalogoClienteService;
+    private final ClienteAssembler clienteAssembler;
 
     @GetMapping()
-    public List<Cliente> listar() {
-        return clienteRepository.findAll();
+    public List<ClienteModel> listar() {
+        List<Cliente> clientes = clienteRepository.findAll();
+        return clienteAssembler.toCollectionModel(clientes);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> buscar(@PathVariable("id") Long clientId) {
+    public ResponseEntity<ClienteModel> buscar(@PathVariable("id") Long clientId) {
         return clienteRepository.findById(clientId)
-                .map(ResponseEntity::ok)
+                .map(cliente -> ResponseEntity.ok(clienteAssembler.toModel(cliente)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Cliente adicionar(@RequestBody @Validated Cliente cliente) {
-        return catalogoClienteService.salvar(cliente);
+    public ClienteModel adicionar(@RequestBody @Validated ClienteInput clienteInput) {
+        Cliente clienteNovo = clienteAssembler.toEntity(clienteInput);
+        Cliente clienteCadastrado = catalogoClienteService.salvar(clienteNovo);
+        return clienteAssembler.toModel(clienteCadastrado);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> atualizar(@PathVariable("id") Long clientId, @RequestBody Cliente cliente) {
+    public ResponseEntity<ClienteModel> atualizar(@PathVariable("id") Long clientId, @RequestBody ClienteInput clienteInput) {
+        Cliente cliente = clienteAssembler.toEntity(clienteInput);
+
         return clienteRepository.findById(clientId)
                 .map(client -> {
                     cliente.setId(client.getId());
-                    return clienteRepository.save(cliente);
+                    Cliente clienteAtualizado = clienteRepository.save(cliente);
+                    return clienteAssembler.toModel(clienteAtualizado);
                 })
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
